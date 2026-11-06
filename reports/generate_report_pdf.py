@@ -310,14 +310,16 @@ def create_report(output_filename="Report.pdf"):
     for c in challenges:
         story.append(Paragraph(f"• {c}", body_style))
 
-    story.append(Spacer(1, 3))
+    story.append(Spacer(1, 2))
     story.append(Paragraph("9. Conclusion", h1_style))
     story.append(
         Paragraph(
-            "The house-price prediction project has been successfully converted from monolithic scripts into a modular, "
-            "testable, and production-ready MLOps application. All requirements across Sessions 7, 8, and 9 were fulfilled, "
-            "including modular pipeline execution, unified Scikit-learn pipeline serialization, automated pytest suites, "
-            "FastAPI REST endpoints with schema enforcement, Docker containerization, and local vs container equivalence verification.",
+            "<b>Implemented & Verified:</b> Successfully built modular ML pipelines (data, train, evaluate, predict), "
+            "serialized a unified Scikit-learn Pipeline (StandardScaler + RandomForest), served predictions via FastAPI with Pydantic validation, "
+            "packaged a standalone Docker container (ml-inference-api:1.0), achieved exact local vs. container prediction parity (&Delta; = $0.0000), "
+            "and passed all 9 regression tests.<br/>"
+            "<b>Researched Multi-Service Compose:</b> Researched, designed, and validated (via <code>docker compose config</code>) a multi-service "
+            "Compose architecture connecting FastAPI to an independent MLflow Tracking Server with persistent backend and artifact storage.",
             body_style,
         )
     )
