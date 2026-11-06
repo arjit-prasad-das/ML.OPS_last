@@ -1,0 +1,7 @@
+{
+    "test_mae": 17227.0485,
+    "test_rmse": 21353.5236,
+    "test_r2": 0.9837,
+    "test_samples": 49,
+    "model_type": "random_forest"
+}
