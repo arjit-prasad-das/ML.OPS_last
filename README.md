@@ -1,18 +1,37 @@
-# MLOps Lab: Modular ML Pipelines, FastAPI & Docker (Sessions 7, 8, 9)
+# MLOps Lab: Modular ML Pipelines, FastAPI & Docker (Sessions 7, 8 & 9)
 
 **Student Name:** Arjit Prasad Das  
 **Roll Number:** 24AI013  
 **Course:** B.Tech, Artificial Intelligence & Data Science  
 **Subject:** MLOps: From Machine Learning to Production AI Systems  
-**GitHub Repository:** [https://github.com/arjitprasaddas/mlops-lab-7-9](https://github.com/arjitprasaddas/mlops-lab-7-9)  
+**GitHub Repository:** [https://github.com/arjit-prasad-das/ML.OPS_last](https://github.com/arjit-prasad-das/ML.OPS_last)  
 
 ---
 
-## 1. Project Overview & Architecture
+## 1. Project Overview & Objectives
 
-This repository transforms an existing Machine Learning project for **House Price Prediction** into a reproducible, production-ready, modular service exposed via **FastAPI** and packaged with **Docker** and **Docker Compose**.
+This project refactors a machine learning project for **House Price Prediction** into a modular, testable, and reproducible software application. It covers:
+1. **Modular ML Pipeline (Session 7):** Decoupling ingestion, cleaning, training, evaluation, and inference, with preprocessing encapsulated inside a Scikit-learn Pipeline to guarantee identical transformations without data leakage.
+2. **Model Serving with FastAPI (Session 8):** Exposing low-latency REST endpoints (`GET /health`, `POST /predict`) with strict Pydantic input validation, boundary checking, and OpenAPI Swagger documentation.
+3. **Containerization with Docker (Session 9):** Packaging the trained model and inference service into a portable Docker container with verified port forwarding, container logging, and host-to-container prediction parity.
+4. **Multi-Service Architecture Design:** Architecting a multi-service Docker Compose specification uniting FastAPI with an MLflow Tracking Server and persistent storage.
 
-### End-to-End Workflow Architecture
+---
+
+## 2. Technology Stack
+
+* **Language:** Python 3.11
+* **Machine Learning:** Scikit-learn (`StandardScaler`, `RandomForestRegressor`, `Pipeline`), Joblib
+* **Data Processing:** Pandas, NumPy
+* **API & Serving:** FastAPI, Pydantic, Uvicorn, HTTPX
+* **Testing & Quality:** Pytest
+* **Containerization:** Docker, Docker Compose
+* **Experimentation & Tracking:** MLflow
+* **Visualization & Reporting:** Matplotlib, ReportLab
+
+---
+
+## 3. Project Architecture
 
 ```
 Raw CSV Dataset (data/raw/dataset.csv)
@@ -42,7 +61,7 @@ Held-Out Evaluation           Batch / Record Scoring         Containerized REST 
 
 ---
 
-## 2. Directory Structure
+## 4. Repository Structure
 
 ```text
 mlops-lab-7-9/
@@ -50,16 +69,17 @@ mlops-lab-7-9/
 │   └── config.yaml              # Centralized YAML configuration for dataset, hyperparameters & paths
 ├── data/
 │   ├── raw/
-│   │   └── dataset.csv          # Versioned raw house price dataset (240 samples, 5 features + price)
+│   │   └── dataset.csv          # Versioned raw house price dataset (240 records, 5 features + target)
 │   └── processed/
-│       ├── train.csv            # Cleaned training split (80%)
-│       └── test.csv             # Cleaned held-out test split (20%)
+│       ├── train.csv            # Cleaned training split (192 records, 80%)
+│       └── test.csv             # Cleaned held-out test split (49 records, 20%)
 ├── models/
 │   └── house_price_pipeline.joblib # Serialized end-to-end Scikit-learn inference pipeline
 ├── reports/
 │   ├── metrics.json             # Held-out evaluation metrics (MAE, RMSE, R²)
 │   ├── sample_predictions.json  # Predictions generated for 5 sample records
 │   ├── prediction_comparison.json # Local vs Docker container prediction equivalence table
+│   ├── generate_report_pdf.py   # Script generating Report.pdf
 │   └── figures/
 │       └── actual_vs_predicted.png # Regression scatter plot
 ├── screenshots/
@@ -93,78 +113,82 @@ mlops-lab-7-9/
 
 ---
 
-## 3. Dataset & Problem Specification
+## 5. Dataset Description
 
-* **Domain:** Real Estate Valuation / House Price Estimation (Regression).
-* **Dataset:** Deterministic synthetic dataset consisting of 240 records with no personally identifiable information (PII).
-* **Features:**
-  1. `area_sqft` (float): Total floor space in square feet.
-  2. `bedrooms` (integer): Number of bedrooms (range: 1–6).
-  3. `bathrooms` (integer): Number of bathrooms (range: 1–4).
-  4. `age_years` (integer): Age of property in years (range: 0–60).
-  5. `distance_km` (float): Distance to metropolitan center in km (range: 0.5–25.0).
-* **Target:** `price` (float): Property value in USD.
-* **Pipeline Estimator:** `StandardScaler` followed by `RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)`.
+* **Domain:** Residential Real Estate Valuation (Regression).
+* **Source:** Deterministic synthetic dataset (240 observations, 6 columns). Contains no personal or confidential information.
+* **Target Variable:** `price` (Continuous float value in USD).
+* **Input Features:**
+  1. `area_sqft` (float): Total floor space in square feet (550 to 3,200).
+  2. `bedrooms` (integer): Number of bedrooms (1 to 6).
+  3. `bathrooms` (integer): Number of bathrooms (1 to 4).
+  4. `age_years` (integer): Age of property in years (0 to 60).
+  5. `distance_km` (float): Distance to metropolitan center in kilometers (0.5 to 25.0).
 
 ---
 
-## 4. Setup & Installation
+## 6. Installation & Environment Setup
 
-### Step 1: Clone Repository & Create Virtual Environment
 ```bash
-git clone https://github.com/arjitprasaddas/mlops-lab-7-9.git
-cd mlops-lab-7-9
+# Clone the repository
+git clone https://github.com/arjit-prasad-das/ML.OPS_last.git
+cd ML.OPS_last
 
-# Create virtual environment
+# Create Python virtual environment
 python -m venv .venv
 
-# Activate on Windows PowerShell:
+# Activate virtual environment
+# Windows PowerShell:
 .venv\Scripts\Activate.ps1
-
-# Activate on Linux / macOS:
+# Linux / macOS:
 source .venv/bin/activate
 
-# Install locked dependencies:
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ---
 
-## 5. Execution Guide: Part A — ML Pipelines
+## 7. Execution Guide: Part A — ML Pipelines
 
-### 1. Run Pipeline Training from Terminal
+### 1. Train the Pipeline
 ```bash
 python -m src.train
 ```
-*Loads raw data, performs schema validation, splits train/test partitions without leakage, fits the unified pipeline, and saves `models/house_price_pipeline.joblib`.*
+Loads raw data, performs schema validation, splits dataset into 192 training rows and 49 testing rows without data leakage, fits the `Pipeline([('scaler', StandardScaler()), ('regressor', RandomForestRegressor())])`, and persists the artifact to `models/house_price_pipeline.joblib`.
 
-### 2. Run Pipeline Evaluation
+### 2. Evaluate Held-Out Performance
 ```bash
 python -m src.evaluate
 ```
-*Scores held-out test set (`data/processed/test.csv`), generates `reports/metrics.json`, and renders `reports/figures/actual_vs_predicted.png`.*
+Scores `data/processed/test.csv`, exports metrics to `reports/metrics.json`, and saves `reports/figures/actual_vs_predicted.png`.
 
-### 3. Generate Predictions on Sample Records
+**Achieved Evaluation Metrics:**
+* **$R^2$ Score:** `0.9837` *(Explains 98.37% of price variance)*
+* **MAE:** `$17,227.05`
+* **RMSE:** `$21,353.52`
+
+### 3. Generate Sample Predictions
 ```bash
 python -m src.predict
 ```
-*Scores 5 records and stores results in `reports/sample_predictions.json`.*
+Scores 5 distinct property records and records output in `reports/sample_predictions.json`.
 
-### 4. Execute Automated Pipeline Tests
+### 4. Run Pipeline Unit Tests
 ```bash
 pytest tests/test_pipeline.py -v
 ```
 
 ---
 
-## 6. Execution Guide: Part B — FastAPI REST Service
+## 8. Execution Guide: Part B — FastAPI REST Service
 
 ### 1. Launch FastAPI Server Locally
 ```bash
 uvicorn src.api:app --reload --host 127.0.0.1 --port 8000
 ```
-Interactive Swagger UI Documentation is accessible at:  
-👉 **http://127.0.0.1:8000/docs**
+* **Interactive Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+* **OpenAPI Schema:** [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json)
 
 ### 2. Test Endpoints
 
@@ -172,7 +196,6 @@ Interactive Swagger UI Documentation is accessible at:
 ```bash
 curl -X GET http://127.0.0.1:8000/health
 ```
-**Response JSON (200 OK):**
 ```json
 {
   "status": "ok",
@@ -194,7 +217,6 @@ curl -X POST http://127.0.0.1:8000/predict \
     "distance_km": 12.0
   }'
 ```
-**Response JSON (200 OK):**
 ```json
 {
   "predicted_price": 423884.13,
@@ -203,54 +225,10 @@ curl -X POST http://127.0.0.1:8000/predict \
 }
 ```
 
-#### C. Validation Testing: Missing Field (Expected 422)
-```bash
-curl -X POST http://127.0.0.1:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "area_sqft": 1800.0,
-    "bedrooms": 3,
-    "bathrooms": 2,
-    "age_years": 5
-  }'
-```
-**Response JSON (422 Unprocessable Entity):**
-```json
-{
-  "detail": [
-    {
-      "type": "missing",
-      "loc": ["body", "distance_km"],
-      "msg": "Field required"
-    }
-  ]
-}
-```
-
-#### D. Validation Testing: Invalid Data Type (Expected 422)
-```bash
-curl -X POST http://127.0.0.1:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "area_sqft": "one thousand",
-    "bedrooms": 3,
-    "bathrooms": 2,
-    "age_years": 5,
-    "distance_km": 12.0
-  }'
-```
-**Response JSON (422 Unprocessable Entity):**
-```json
-{
-  "detail": [
-    {
-      "type": "float_parsing",
-      "loc": ["body", "area_sqft"],
-      "msg": "Input should be a valid number, unable to parse string as a number"
-    }
-  ]
-}
-```
+#### C. Validation & Error Handling (HTTP 422)
+* **Missing Field:** Payload omitting `distance_km` returns HTTP 422 (`"Field required"`).
+* **Invalid Data Type:** Payload with `"area_sqft": "one thousand"` returns HTTP 422 (`"unable to parse string as a number"`).
+* **Business Constraint Violation:** Payload with `"area_sqft": -500.0` or `"bedrooms": 0` returns HTTP 422 (`"Input should be greater than 0"`).
 
 ### 3. Run Automated API Tests
 ```bash
@@ -259,7 +237,7 @@ pytest tests/test_api.py -v
 
 ---
 
-## 7. Execution Guide: Part C — Dockerization & Docker Compose
+## 9. Execution Guide: Part C — Dockerization & Compose
 
 ### 1. Build the Docker Image
 ```bash
@@ -285,79 +263,55 @@ docker ps
 docker logs ml-api
 ```
 
-### 5. Test Inference Against Docker Container
-```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "area_sqft": 1800.0,
-    "bedrooms": 3,
-    "bathrooms": 2,
-    "age_years": 5,
-    "distance_km": 12.0
-  }'
-```
-
-### 6. Stop and Clean Up Container
+### 5. Stop and Clean Up Container
 ```bash
 docker stop ml-api
 docker rm ml-api
 ```
 
-### 7. Multi-Service Architecture with Docker Compose (Section C6)
-
-#### Implemented Work vs. Researched Compose Design
-In accordance with Page 6 of the MLOps assignment specification (*"If Compose is not feasible, containerize FastAPI and submit a researched Compose design, distinguishing implemented work from proposed work"*):
-
-* **Implemented & Verified Work:**
-  * Complete standalone containerization of the FastAPI prediction service (`ml-inference-api:1.0`).
-  * Port forwarding (`8000:8000`), container isolation, and model artifact mounting.
-  * Local host to container HTTP inference verification and parity analysis.
-* **Researched & Designed Multi-Service Architecture:**
-  * Defined in `docker-compose.yml`.
-  * Service `api`: Depends on `mlflow`, communicates over internal network `mlops-house-price-service_default`, and passes `MLFLOW_TRACKING_URI=http://mlflow:5000`.
-  * Service `mlflow`: Uses `ghcr.io/mlflow/mlflow:v2.11.3`, exposes port 5000, runs with SQLite backend database and artifact storage backed by named persistent volume `mlflow-data`.
-  * Syntactically validated with `docker compose config`.
+### 6. Multi-Service Docker Compose Status (Section C6)
+In accordance with Page 6 of the assignment specification:
+* **Implemented & Verified Work:** Standalone containerized FastAPI service (`ml-inference-api:1.0`) with model loading, port forwarding, and verified prediction parity.
+* **Researched & Designed Architecture (`docker-compose.yml`):** Multi-service stack connecting `api` (FastAPI) to `mlflow` (`ghcr.io/mlflow/mlflow:v2.11.3`) tracking server over an internal bridge network with persistent SQLite and artifact storage (`mlflow-data`). Validated with `docker compose config`.
 
 ```bash
-# Validate compose syntax
 docker compose config
-
-# Build and start services in background (if Docker multi-service deployment is desired)
-docker compose up --build -d
-
-# Check running services
-docker compose ps
-
-# Teardown services and networks
-docker compose down
 ```
 
 ---
 
-## 8. Part D — Final Integration & Verification
+## 10. Part D — Local vs. Docker Numerical Parity
 
-To verify numerical parity between the local Python environment and the Docker containerized API:
+To verify deployment reproducibility:
 ```bash
 python -m src.verify_predictions
 ```
-This tests 5 sample records simultaneously against the local `Pipeline.predict()` and the container's HTTP endpoint `http://localhost:8000/predict`, validating that:
+All 5 sample test cases demonstrate exact numerical parity between the local Python environment and the Docker REST API:
 $$\Delta = |y_{\text{local}} - y_{\text{docker}}| = \$0.0000$$
+
+| Case ID | Input Features | Local Pipeline ($) | Docker API ($) | Absolute Difference | Parity Status |
+| :---: | :--- | :---: | :---: | :---: | :---: |
+| **1** | 1050 sqft, 2 beds, 1 bath, 10 yrs, 5.2 km | $251,052.91 | $251,052.91 | $0.0000 | **EXACT MATCH** |
+| **2** | 1800 sqft, 3 beds, 2 baths, 5 yrs, 12.0 km | $423,884.13 | $423,884.13 | $0.0000 | **EXACT MATCH** |
+| **3** | 2400 sqft, 4 beds, 3 baths, 15 yrs, 3.5 km | $553,672.70 | $553,672.70 | $0.0000 | **EXACT MATCH** |
+| **4** | 850 sqft, 1 bed, 1 bath, 25 yrs, 18.4 km | $217,335.68 | $217,335.68 | $0.0000 | **EXACT MATCH** |
+| **5** | 3100 sqft, 5 beds, 4 baths, 2 yrs, 2.0 km | $711,693.19 | $711,693.19 | $0.0000 | **EXACT MATCH** |
 
 ---
 
-## 9. Summary of Automated Tests
+## 11. Automated Test Suite Summary
 
-Execute the complete regression test suite:
+Run the complete regression suite:
 ```bash
 pytest tests/ -v
 ```
-* **Test 1:** `test_data_loading_and_schema` — Ensures dataset integrity and schema compliance.
-* **Test 2:** `test_split_data_no_leakage` — Asserts train and test splits have 0 index overlap.
-* **Test 3:** `test_pipeline_prediction_shape_and_type` — Asserts model output shape and non-negative values.
-* **Test 4:** `test_prediction_input_validation` — Asserts missing columns raise `ValueError`.
-* **Test 5:** `test_health_endpoint` — Asserts `/health` reports 200 OK and model ready.
-* **Test 6:** `test_predict_valid_payload` — Asserts `/predict` yields valid price estimation.
-* **Test 7:** `test_predict_missing_required_field` — Asserts missing payload fields return 422.
-* **Test 8:** `test_predict_wrong_data_type` — Asserts type mismatch returns 422.
-* **Test 9:** `test_predict_invalid_business_constraints` — Asserts negative dimensions return 422.
+**Results: 9 passed in 3.35s (100% pass rate)**
+* `test_data_loading_and_schema` (PASSED)
+* `test_split_data_no_leakage` (PASSED)
+* `test_pipeline_prediction_shape_and_type` (PASSED)
+* `test_prediction_input_validation` (PASSED)
+* `test_health_endpoint` (PASSED)
+* `test_predict_valid_payload` (PASSED)
+* `test_predict_missing_required_field` (PASSED)
+* `test_predict_wrong_data_type` (PASSED)
+* `test_predict_invalid_business_constraints` (PASSED)

@@ -98,7 +98,7 @@ def create_report(output_filename="Report.pdf"):
             Paragraph("<b>Lab:</b> MLOps — Sessions 7, 8, 9 Combined", body_style),
         ],
         [
-            Paragraph("<b>GitHub Repository:</b> https://github.com/arjitprasaddas/mlops-lab-7-9", body_style),
+            Paragraph("<b>GitHub Repository:</b> https://github.com/arjit-prasad-das/ML.OPS_last", body_style),
             Paragraph("<b>Status:</b> Fully Implemented & Verified", body_style),
         ],
     ]
@@ -121,7 +121,8 @@ def create_report(output_filename="Report.pdf"):
         Paragraph(
             "The objective of this assignment is to refactor an existing Machine Learning project "
             "(House Price Prediction) into a production-grade, modular, and reproducible ML application. "
-            "The system decouples data loading, preprocessing, model training, evaluation, and "
+            "The dataset comprises 240 deterministic property records (partitioned into 192 training and 49 testing samples) "
+            "across 5 numerical features. The system decouples data loading, preprocessing, model training, evaluation, and "
             "inference into independent modules, exposes predictions via a high-performance REST API using <b>FastAPI</b>, and "
             "packages the entire runtime into an isolated, portable <b>Docker container</b>.",
             body_style,

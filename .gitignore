@@ -8,6 +8,14 @@ __pycache__/
 venv/
 ENV/
 
+# Secrets, credentials and environment variables
+.env
+*.env
+*.pem
+*.key
+*.token
+*credentials*
+
 # Distribution / packaging
 build/
 dist/
@@ -22,10 +30,11 @@ htmlcov/
 mlruns/
 mlflow.db
 
-# Large raw datasets (DVC-tracked)
-data/processed/*.csv
+# Generated processed data splits
+data/processed/
 
 # Temporary files
 *.tmp
+Report_Final.pdf
 .DS_Store
 Thumbs.db
