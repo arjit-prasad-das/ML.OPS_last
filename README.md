@@ -4,12 +4,13 @@
 **Roll Number:** 24AI013  
 **Course:** B.Tech, Artificial Intelligence & Data Science  
 **Subject:** MLOps: From Machine Learning to Production AI Systems  
+**GitHub Repository:** [https://github.com/arjitprasaddas/mlops-lab-7-9](https://github.com/arjitprasaddas/mlops-lab-7-9)  
 
 ---
 
 ## 1. Project Overview & Architecture
 
-This repository transforms an existing Machine Learning model for **House Price Prediction** into a reproducible, production-ready, modular service exposed via **FastAPI** and packaged with **Docker** and **Docker Compose**.
+This repository transforms an existing Machine Learning project for **House Price Prediction** into a reproducible, production-ready, modular service exposed via **FastAPI** and packaged with **Docker** and **Docker Compose**.
 
 ### End-to-End Workflow Architecture
 
@@ -61,6 +62,14 @@ mlops-lab-7-9/
 │   ├── prediction_comparison.json # Local vs Docker container prediction equivalence table
 │   └── figures/
 │       └── actual_vs_predicted.png # Regression scatter plot
+├── screenshots/
+│   ├── 01_pipeline_training_terminal.png # Training & evaluation terminal execution
+│   ├── 02_swagger_ui_docs.png           # Interactive Swagger UI browser screenshot
+│   ├── 03_health_check_response.png     # Health endpoint browser screenshot
+│   ├── 05_docker_run_and_logs.png       # Docker build, run, and logs screenshot
+│   ├── 06_curl_and_validation_terminal.png # Validation & error handling testing
+│   ├── 07_prediction_parity_terminal.png # Local vs Docker parity proof
+│   └── 08_pytest_passing_terminal.png   # Full 9/9 pytest suite passing
 ├── src/
 │   ├── __init__.py
 │   ├── data.py                  # Loading, validation, cleaning, and train/test splitting
@@ -103,7 +112,7 @@ mlops-lab-7-9/
 
 ### Step 1: Clone Repository & Create Virtual Environment
 ```bash
-git clone <YOUR_REPO_URL>
+git clone https://github.com/arjitprasaddas/mlops-lab-7-9.git
 cd mlops-lab-7-9
 
 # Create virtual environment
@@ -250,7 +259,7 @@ pytest tests/test_api.py -v
 
 ---
 
-## 7. Execution Guide: Part C — Dockerization
+## 7. Execution Guide: Part C — Dockerization & Docker Compose
 
 ### 1. Build the Docker Image
 ```bash
@@ -259,7 +268,7 @@ docker build -t ml-inference-api:1.0 .
 
 ### 2. Verify Docker Image
 ```bash
-docker image ls | grep ml-inference-api
+docker image ls ml-inference-api:1.0
 ```
 
 ### 3. Run the Container
@@ -295,20 +304,30 @@ docker stop ml-api
 docker rm ml-api
 ```
 
-### 7. Multi-Service Architecture with Docker Compose
-To run both the **FastAPI prediction service** and an **MLflow Tracking Server** simultaneously:
+### 7. Multi-Service Architecture with Docker Compose (Section C6)
+
+#### Implemented Work vs. Researched Compose Design
+In accordance with Page 6 of the MLOps assignment specification (*"If Compose is not feasible, containerize FastAPI and submit a researched Compose design, distinguishing implemented work from proposed work"*):
+
+* **Implemented & Verified Work:**
+  * Complete standalone containerization of the FastAPI prediction service (`ml-inference-api:1.0`).
+  * Port forwarding (`8000:8000`), container isolation, and model artifact mounting.
+  * Local host to container HTTP inference verification and parity analysis.
+* **Researched & Designed Multi-Service Architecture:**
+  * Defined in `docker-compose.yml`.
+  * Service `api`: Depends on `mlflow`, communicates over internal network `mlops-house-price-service_default`, and passes `MLFLOW_TRACKING_URI=http://mlflow:5000`.
+  * Service `mlflow`: Uses `ghcr.io/mlflow/mlflow:v2.11.3`, exposes port 5000, runs with SQLite backend database and artifact storage backed by named persistent volume `mlflow-data`.
+  * Syntactically validated with `docker compose config`.
+
 ```bash
 # Validate compose syntax
 docker compose config
 
-# Build and start services in background
+# Build and start services in background (if Docker multi-service deployment is desired)
 docker compose up --build -d
 
 # Check running services
 docker compose ps
-
-# View aggregate logs
-docker compose logs -f
 
 # Teardown services and networks
 docker compose down
@@ -320,29 +339,14 @@ docker compose down
 
 To verify numerical parity between the local Python environment and the Docker containerized API:
 ```bash
-python src/verify_predictions.py
+python -m src.verify_predictions
 ```
 This tests 5 sample records simultaneously against the local `Pipeline.predict()` and the container's HTTP endpoint `http://localhost:8000/predict`, validating that:
-$$\Delta = |y_{\text{local}} - y_{\text{docker}}| \le 0.01$$
+$$\Delta = |y_{\text{local}} - y_{\text{docker}}| = \$0.0000$$
 
 ---
 
-## 9. Architecture Analysis: Online vs. Batch Inference Design (B6)
-
-When scaling from individual request scoring to scoring large volumes (e.g., millions of records via CSV uploads):
-
-1. **Online Synchronous Endpoints:**
-   * Best for real-time web/mobile applications requiring sub-100ms latency.
-   * Drawback: Long-running HTTP requests timing out (504 Gateway Timeout), memory bottlenecks when parsing large files in RAM.
-2. **Asynchronous Background Processing (Recommended Batch Strategy):**
-   * Endpoint `POST /predict/batch` receives CSV file, validates schema, immediately returns a `job_id` with `202 Accepted`.
-   * Work is dispatched to Celery/Redis or an asynchronous worker queue.
-   * Worker processes records in chunks (e.g., using `pandas.read_csv(..., chunksize=10000)`), streams predictions to cloud storage (S3/GCS) or a database, and updates status.
-   * Client polls `GET /jobs/{job_id}` or receives a Webhook callback upon completion.
-
----
-
-## 10. Summary of Automated Tests
+## 9. Summary of Automated Tests
 
 Execute the complete regression test suite:
 ```bash

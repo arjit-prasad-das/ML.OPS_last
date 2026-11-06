@@ -1,4 +1,4 @@
-version: '3.8'
+name: mlops-house-price-service
 
 services:
   api:
@@ -18,7 +18,7 @@ services:
 
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.11.3
-    container_name: mlflow-server
+    container_name: mlflow-tracking-server
     ports:
       - "5000:5000"
     command: >
