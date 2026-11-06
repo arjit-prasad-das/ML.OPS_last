@@ -275,7 +275,7 @@ def create_report(output_filename="Report.pdf"):
     img_curl = Path("screenshots/06_curl_and_validation_terminal.png")
     if img_curl.exists():
         story.append(Image(str(img_curl), width=480, height=150))
-        story.append(Paragraph("<b>Figure 4:</b> REST API Request Testing: 200 Valid Prediction, 422 Missing Field, 422 Type Error", caption_style))
+        story.append(Paragraph("<b>Figure 4:</b> REST API Request Testing: 200 Valid Prediction, 422 Missing Field, 422 Type Error, and Business Constraint Validation (HTTP 422)", caption_style))
 
     # 5. Docker Containerization & Compose Design (Part C)
     story.append(Paragraph("5. Docker Containerization & Multi-Service Compose (Part C)", h1_style))
@@ -341,7 +341,7 @@ def create_report(output_filename="Report.pdf"):
         "<b>2. DataFrame Column Order in Inference:</b> When JSON payloads are deserialized, dictionary keys might not preserve the exact column ordering expected by Scikit-learn. "
         "<i>Resolution:</i> <code>src/api.py</code> and <code>src/predict.py</code> explicitly project inputs into <code>df[EXPECTED_FEATURES]</code> before calling the pipeline.",
         "<b>3. Pydantic Type Coercion & Constraints:</b> Default schemas allow negative values or 0 bedrooms which violate domain logic. "
-        "<i>Resolution:</i> Implemented strict <code>pydantic.Field(..., gt=0, ge=0)</code> constraints to guarantee semantic validity.",
+        "<i>Resolution:</i> Implemented Pydantic Field constraints (gt=0, ge=0) to enforce numerical and semantic validity.",
         "<b>4. Docker Port Mapping & Host Binding:</b> Uvicorn defaulting to 127.0.0.1 inside a container is inaccessible to the host machine. "
         "<i>Resolution:</i> Configured Uvicorn to bind to 0.0.0.0 inside the Dockerfile while mapping host port 8000 to container port 8000.",
     ]
