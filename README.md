@@ -69,7 +69,7 @@ mlops-lab-7-9/
 │   └── config.yaml              # Centralized YAML configuration for dataset, hyperparameters & paths
 ├── data/
 │   ├── raw/
-│   │   └── dataset.csv          # Versioned raw house price dataset (240 records, 5 features + target)
+│   │   └── dataset.csv          # Versioned raw house price dataset (241 records, 5 features + target)
 │   └── processed/
 │       ├── train.csv            # Cleaned training split (192 records, 80%)
 │       └── test.csv             # Cleaned held-out test split (49 records, 20%)
@@ -116,7 +116,7 @@ mlops-lab-7-9/
 ## 5. Dataset Description
 
 * **Domain:** Residential Real Estate Valuation (Regression).
-* **Source:** Deterministic synthetic dataset (240 observations, 6 columns). Contains no personal or confidential information.
+* **Source:** Deterministic synthetic dataset (241 observations, 6 columns). Contains no personal or confidential information.
 * **Target Variable:** `price` (Continuous float value in USD).
 * **Input Features:**
   1. `area_sqft` (float): Total floor space in square feet (550 to 3,200).

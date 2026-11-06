@@ -99,7 +99,7 @@ def create_report(output_filename="Report.pdf"):
         ],
         [
             Paragraph("<b>GitHub Repository:</b> https://github.com/arjit-prasad-das/ML.OPS_last", body_style),
-            Paragraph("<b>Status:</b> Fully Implemented & Verified", body_style),
+            Paragraph("<b>Status:</b> Core Implementation Verified | Docker Compose Design Validated", body_style),
         ],
     ]
     meta_table = Table(meta_data, colWidths=[270, 270])
@@ -121,7 +121,7 @@ def create_report(output_filename="Report.pdf"):
         Paragraph(
             "The objective of this assignment is to refactor an existing Machine Learning project "
             "(House Price Prediction) into a production-grade, modular, and reproducible ML application. "
-            "The dataset comprises 240 deterministic property records (partitioned into 192 training and 49 testing samples) "
+            "The dataset comprises 241 deterministic property records (partitioned into 192 training and 49 testing samples) "
             "across 5 numerical features. The system decouples data loading, preprocessing, model training, evaluation, and "
             "inference into independent modules, exposes predictions via a high-performance REST API using <b>FastAPI</b>, and "
             "packages the entire runtime into an isolated, portable <b>Docker container</b>.",
@@ -206,12 +206,50 @@ def create_report(output_filename="Report.pdf"):
         )
     )
     story.append(metrics_table)
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
+
+    # Sample Predictions Table (Actual Scored Records)
+    sample_preds_path = Path("reports/sample_predictions.json")
+    if sample_preds_path.exists():
+        with open(sample_preds_path, "r", encoding="utf-8") as f:
+            sample_preds = json.load(f)
+        preds_data = [
+            ["Record", "Area (sqft)", "Beds", "Baths", "Age (yr)", "Dist (km)", "Predicted Price"]
+        ]
+        for i, item in enumerate(sample_preds, 1):
+            feat = item["features"]
+            preds_data.append([
+                f"Sample {i}",
+                f"{feat['area_sqft']:,.1f}",
+                str(feat["bedrooms"]),
+                str(feat["bathrooms"]),
+                str(feat["age_years"]),
+                f"{feat['distance_km']:.1f}",
+                f"${item['predicted_price']:,.2f}",
+            ])
+        preds_table = Table(preds_data, colWidths=[65, 80, 50, 50, 60, 65, 170])
+        preds_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2C5282")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7FAFC")]),
+                    ("PADDING", (0, 0), (-1, -1), 2),
+                    ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+                ]
+            )
+        )
+        story.append(preds_table)
+        story.append(Paragraph("<b>Table 2:</b> Five-Record Sample Prediction Output (Evaluated by Saved Pipeline)", caption_style))
+        story.append(Spacer(1, 2))
 
     # Evidence: Scatter Plot
     plot_file = Path("reports/figures/actual_vs_predicted.png")
     if plot_file.exists():
-        story.append(Image(str(plot_file), width=320, height=160))
+        story.append(Image(str(plot_file), width=270, height=120))
         story.append(Paragraph("<b>Figure 2:</b> Actual vs. Predicted House Prices Scatter Plot on Held-Out Test Set", caption_style))
 
     # 4. FastAPI Model Serving (Part B)
@@ -228,7 +266,7 @@ def create_report(output_filename="Report.pdf"):
     # Evidence: Swagger UI Screenshot (Actual Browser)
     img_swagger = Path("screenshots/02_swagger_ui_docs.png")
     if img_swagger.exists():
-        story.append(Image(str(img_swagger), width=480, height=175))
+        story.append(Image(str(img_swagger), width=480, height=135))
         story.append(Paragraph("<b>Figure 3:</b> FastAPI Interactive Swagger UI (/docs) Browser Interface", caption_style))
 
     story.append(PageBreak())
